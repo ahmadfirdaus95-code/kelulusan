@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Hasil Kelulusan</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+min-height:100vh;
+background:linear-gradient(135deg,#2563eb,#7c3aed);
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.card{
+width:100%;
+max-width:650px;
+background:white;
+border-radius:30px;
+padding:35px;
+box-shadow:0 25px 60px rgba(0,0,0,.25);
+animation:fadeIn .5s ease;
+}
+
+@keyframes fadeIn{
+from{
+opacity:0;
+transform:translateY(20px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.header{
+text-align:center;
+margin-bottom:25px;
+}
+
+.logo{
+width:120px;
+margin-bottom:10px;
+}
+
+.school{
+font-size:28px;
+font-weight:700;
+color:#1e3a8a;
+}
+
+.subtitle{
+font-size:15px;
+color:#666;
+margin-top:5px;
+}
+
+.loading{
+text-align:center;
+font-size:18px;
+padding:30px;
+}
+
+.error{
+text-align:center;
+color:red;
+font-weight:600;
+padding:20px;
+}
+
+.success{
+text-align:center;
+background:#dcfce7;
+padding:20px;
+border-radius:18px;
+margin-bottom:25px;
+}
+
+.success h2{
+color:#166534;
+margin-bottom:10px;
+}
+
+.label{
+font-size:13px;
+color:#666;
+margin-bottom:5px;
+}
+
+.value{
+font-size:18px;
+font-weight:600;
+margin-bottom:18px;
+}
+
+.download{
+display:block;
+text-align:center;
+padding:16px;
+background:#16a34a;
+color:white;
+text-decoration:none;
+border-radius:14px;
+font-weight:700;
+margin-top:20px;
+}
+
+.back{
+display:block;
+text-align:center;
+padding:14px;
+background:#e5e7eb;
+color:#111827;
+text-decoration:none;
+border-radius:14px;
+font-weight:600;
+margin-top:12px;
+}
+
+.footer{
+text-align:center;
+margin-top:25px;
+font-size:12px;
+color:#777;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="header">
+<img src="logo_sekolah.png" class="logo">
+
+<div class="school">
+SDN BAMBU APUS 01
+</div>
+
+<div class="subtitle">
+Pengumuman Kelulusan Kelas VI
+</div>
+</div>
+
+<div id="hasil" class="loading">
+Memeriksa data...
+</div>
+
+<div class="footer">
+Jl. Bambu Apus Raya No.2, RT.3/RW.1<br>
+Kelurahan Bambu Apus, Kecamatan Cipayung<br>
+Kota Jakarta Timur
+</div>
+
+</div>
+
+<script>
+
+const CSV_URL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vRKSxzRYLea5VeGbjei7EpPb8ToUNUd4jJ70nX6c04ZMRd0y6lSscpe8Sttwgp3EcGn0nzQIiT5aXBl/pub?output=csv";
+
+const params =
+new URLSearchParams(window.location.search);
+
+const peserta =
+params.get("peserta");
+
+const nisn =
+params.get("nisn");
+
+async function tampilkanHasil(){
+
+const hasil =
+document.getElementById("hasil");
+
+try{
+
+const response =
+await fetch(CSV_URL);
+
+const text =
+await response.text();
+
+const rows =
+text.split("\n");
+
+let siswa = null;
+
+for(let i=1;i<rows.length;i++){
+
+const kolom =
+rows[i].split(",");
+
+if(
+kolom[0]?.trim() === peserta &&
+kolom[1]?.trim() === nisn
+){
+siswa = kolom;
+break;
+}
+
+}
+
+if(!siswa){
+
+hasil.innerHTML = `
+<div class="error">
+Data tidak ditemukan.
+<br><br>
+<a href="index.html" class="back">
+Kembali
+</a>
+</div>
+`;
+
+return;
+
+}
+
+hasil.innerHTML = `
+<div class="success">
+
+<h2>🎉 SELAMAT 🎉</h2>
+
+<p>
+Peserta didik berikut dinyatakan
+<b>${siswa[5]}</b>
+</p>
+
+</div>
+
+<div class="label">
+Nama Lengkap
+</div>
+
+<div class="value">
+${siswa[2]}
+</div>
+
+<div class="label">
+NISN
+</div>
+
+<div class="value">
+${siswa[1]}
+</div>
+
+<div class="label">
+Tempat Lahir
+</div>
+
+<div class="value">
+${siswa[3]}
+</div>
+
+<div class="label">
+Tanggal Lahir
+</div>
+
+<div class="value">
+${siswa[4]}
+</div>
+
+<a
+href="${siswa[6]}"
+target="_blank"
+class="download">
+📄 DOWNLOAD SKL
+</a>
+
+<a
+href="index.html"
+class="back">
+← Kembali
+</a>
+`;
+
+}catch(err){
+
+hasil.innerHTML = `
+<div class="error">
+Gagal mengambil data dari spreadsheet.
+</div>
+`;
+
+}
+
+}
+
+tampilkanHasil();
+
+</script>
+
+</body>
+</html>
