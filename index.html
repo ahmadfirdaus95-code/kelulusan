@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -17,12 +18,12 @@ font-family:'Segoe UI',sans-serif;
 
 body{
 min-height:100vh;
-background:
-linear-gradient(135deg,#2563eb,#7c3aed);
+background:linear-gradient(135deg,#2563eb,#7c3aed);
 display:flex;
 justify-content:center;
 align-items:center;
 padding:20px;
+overflow-x:hidden;
 }
 
 .card{
@@ -35,6 +36,7 @@ border-radius:28px;
 box-shadow:0 25px 50px rgba(0,0,0,.2);
 text-align:center;
 animation:fadeIn .5s ease;
+transition:all 1s ease;
 }
 
 @keyframes fadeIn{
@@ -134,10 +136,158 @@ font-size:14px;
 font-weight:600;
 }
 
+/* COUNTDOWN OVERLAY */
+
+.overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.75);
+backdrop-filter:blur(10px);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+padding:20px;
+transition:all 1s ease;
+}
+
+.overlay.hide{
+opacity:0;
+visibility:hidden;
+}
+
+.countdown-card{
+max-width:650px;
+width:100%;
+background:rgba(255,255,255,.96);
+padding:40px;
+border-radius:30px;
+text-align:center;
+box-shadow:0 25px 60px rgba(0,0,0,.35);
+}
+
+.countdown-logo{
+width:120px;
+margin-bottom:15px;
+}
+
+.countdown-title{
+font-size:28px;
+font-weight:700;
+color:#1e3a8a;
+margin-bottom:8px;
+}
+
+.countdown-subtitle{
+font-size:18px;
+font-weight:600;
+margin-bottom:15px;
+}
+
+.countdown-date{
+font-size:16px;
+color:#555;
+line-height:1.8;
+margin-bottom:25px;
+}
+
+.timer{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+}
+
+.time-box{
+background:#2563eb;
+color:white;
+padding:15px;
+border-radius:16px;
+}
+
+.time-number{
+font-size:28px;
+font-weight:700;
+}
+
+.time-label{
+font-size:12px;
+margin-top:5px;
+}
+
+.blurred .card{
+filter:blur(8px);
+pointer-events:none;
+user-select:none;
+}
+
+.unlocked .card{
+filter:none;
+pointer-events:auto;
+}
+
+@media(max-width:600px){
+
+.timer{
+grid-template-columns:repeat(2,1fr);
+}
+
+.countdown-title{
+font-size:22px;
+}
+
+}
+
 </style>
 </head>
 
-<body>
+<body class="blurred">
+
+<div id="overlay" class="overlay">
+
+<div class="countdown-card">
+
+<img src="logo_sekolah.png" class="countdown-logo">
+
+<div class="countdown-title">
+SDN BAMBU APUS 01
+</div>
+
+<div class="countdown-subtitle">
+PENGUMUMAN KELULUSAN KELAS VI
+</div>
+
+<div class="countdown-date">
+Pengumuman dapat diakses pada:<br>
+<b>31 Mei 2026 pukul 08.00 WIB</b>
+</div>
+
+<div class="timer">
+
+<div class="time-box">
+<div id="hari" class="time-number">00</div>
+<div class="time-label">Hari</div>
+</div>
+
+<div class="time-box">
+<div id="jam" class="time-number">00</div>
+<div class="time-label">Jam</div>
+</div>
+
+<div class="time-box">
+<div id="menit" class="time-number">00</div>
+<div class="time-label">Menit</div>
+</div>
+
+<div class="time-box">
+<div id="detik" class="time-number">00</div>
+<div class="time-label">Detik</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
 
 <div class="card">
 
@@ -157,18 +307,12 @@ Tahun Pelajaran 2025/2026
 
 <div class="input-group">
 <label>Nomor Peserta</label>
-<input
-type="text"
-id="peserta"
-placeholder="Masukkan Nomor Peserta">
+<input type="text" id="peserta" placeholder="Masukkan Nomor Peserta">
 </div>
 
 <div class="input-group">
 <label>NISN</label>
-<input
-type="text"
-id="nisn"
-placeholder="Masukkan NISN">
+<input type="text" id="nisn" placeholder="Masukkan NISN">
 </div>
 
 <button onclick="lanjutHasil()">
@@ -209,7 +353,63 @@ window.location.href =
 
 }
 
+const waktuBuka =
+new Date("2026-05-31T08:00:00");
+
+function updateCountdown(){
+
+const sekarang = new Date();
+
+const selisih = waktuBuka - sekarang;
+
+if(selisih <= 0){
+
+document.body.classList.remove("blurred");
+document.body.classList.add("unlocked");
+
+document
+.getElementById("overlay")
+.classList.add("hide");
+
+clearInterval(timer);
+
+return;
+
+}
+
+const hari =
+Math.floor(selisih/(1000*60*60*24));
+
+const jam =
+Math.floor((selisih%(1000*60*60*24))/(1000*60*60));
+
+const menit =
+Math.floor((selisih%(1000*60*60))/(1000*60));
+
+const detik =
+Math.floor((selisih%(1000*60))/1000);
+
+document.getElementById("hari").innerText =
+String(hari).padStart(2,"0");
+
+document.getElementById("jam").innerText =
+String(jam).padStart(2,"0");
+
+document.getElementById("menit").innerText =
+String(menit).padStart(2,"0");
+
+document.getElementById("detik").innerText =
+String(detik).padStart(2,"0");
+
+}
+
+updateCountdown();
+
+const timer =
+setInterval(updateCountdown,1000);
+
 </script>
 
 </body>
 </html>
+```
