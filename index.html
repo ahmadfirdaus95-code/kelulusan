@@ -12,7 +12,7 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Arial,sans-serif;
+font-family:'Segoe UI',sans-serif;
 }
 
 body{
@@ -26,10 +26,11 @@ padding:20px;
 
 .card{
 background:rgba(255,255,255,.95);
+backdrop-filter:blur(10px);
 width:100%;
-max-width:500px;
+max-width:550px;
 padding:30px;
-border-radius:20px;
+border-radius:24px;
 box-shadow:0 20px 40px rgba(0,0,0,.2);
 text-align:center;
 }
@@ -40,7 +41,7 @@ margin-bottom:15px;
 }
 
 h1{
-font-size:24px;
+font-size:26px;
 color:#1e3a8a;
 margin-bottom:5px;
 }
@@ -49,34 +50,103 @@ margin-bottom:5px;
 font-size:14px;
 color:#666;
 margin-bottom:20px;
+line-height:1.5;
 }
 
 input{
 width:100%;
-padding:12px;
+padding:14px;
 margin-bottom:12px;
 border:1px solid #ddd;
-border-radius:10px;
+border-radius:12px;
+font-size:15px;
+}
+
+input:focus{
+outline:none;
+border-color:#2563eb;
 }
 
 button{
 width:100%;
-padding:12px;
+padding:14px;
 background:#2563eb;
 color:white;
 border:none;
-border-radius:10px;
+border-radius:12px;
 cursor:pointer;
 font-size:16px;
+font-weight:bold;
+transition:.2s;
 }
 
 button:hover{
+transform:translateY(-2px);
 background:#1d4ed8;
 }
 
 #hasil{
 margin-top:20px;
 text-align:left;
+}
+
+.data-card{
+background:#f8fafc;
+padding:20px;
+border-radius:16px;
+margin-top:15px;
+}
+
+.label{
+font-size:12px;
+color:#666;
+margin-bottom:4px;
+}
+
+.value{
+font-weight:600;
+margin-bottom:14px;
+}
+
+.lulus{
+text-align:center;
+padding:15px;
+background:#dcfce7;
+color:#166534;
+border-radius:12px;
+font-weight:bold;
+margin-top:15px;
+}
+
+.download{
+display:block;
+text-align:center;
+margin-top:15px;
+padding:14px;
+background:#16a34a;
+color:white;
+text-decoration:none;
+border-radius:12px;
+font-weight:bold;
+}
+
+.loading{
+text-align:center;
+color:#666;
+}
+
+.error{
+text-align:center;
+color:red;
+font-weight:bold;
+}
+
+.footer{
+margin-top:20px;
+font-size:12px;
+color:#777;
+text-align:center;
+line-height:1.5;
 }
 
 </style>
@@ -111,7 +181,124 @@ Lihat Hasil Kelulusan
 
 <div id="hasil"></div>
 
+<div class="footer">
+Jl. Bambu Apus Raya No.2, RT.3/RW.1<br>
+Kelurahan Bambu Apus, Kecamatan Cipayung<br>
+Kota Jakarta Timur
 </div>
+
+</div>
+
+<script>
+
+const CSV_URL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vRKSxzRYLea5VeGbjei7EpPb8ToUNUd4jJ70nX6c04ZMRd0y6lSscpe8Sttwgp3EcGn0nzQIiT5aXBl/pub?output=csv";
+
+async function cekKelulusan(){
+
+const peserta =
+document.getElementById("peserta").value.trim();
+
+const nisn =
+document.getElementById("nisn").value.trim();
+
+const hasil =
+document.getElementById("hasil");
+
+if(!peserta || !nisn){
+
+hasil.innerHTML = `
+<div class="error">
+Silakan isi Nomor Peserta dan NISN.
+</div>
+`;
+
+return;
+}
+
+hasil.innerHTML = `
+<div class="loading">
+Memeriksa data...
+</div>
+`;
+
+try{
+
+const response = await fetch(CSV_URL);
+const text = await response.text();
+
+const rows = text.split("\n");
+
+let ditemukan = null;
+
+for(let i=1;i<rows.length;i++){
+
+const kolom = rows[i].split(",");
+
+if(
+kolom[0]?.trim() === peserta &&
+kolom[1]?.trim() === nisn
+){
+ditemukan = kolom;
+break;
+}
+
+}
+
+if(!ditemukan){
+
+hasil.innerHTML = `
+<div class="error">
+Data tidak ditemukan.<br>
+Periksa kembali Nomor Peserta dan NISN.
+</div>
+`;
+
+return;
+}
+
+hasil.innerHTML = `
+<div class="data-card">
+
+<div class="label">Nama Lengkap</div>
+<div class="value">${ditemukan[2]}</div>
+
+<div class="label">NISN</div>
+<div class="value">${ditemukan[1]}</div>
+
+<div class="label">Tempat Lahir</div>
+<div class="value">${ditemukan[3]}</div>
+
+<div class="label">Tanggal Lahir</div>
+<div class="value">${ditemukan[4]}</div>
+
+<div class="lulus">
+🎉 DINYATAKAN ${ditemukan[5]} 🎉
+</div>
+
+<a
+href="${ditemukan[6]}"
+target="_blank"
+class="download">
+📄 DOWNLOAD SKL
+</a>
+
+</div>
+`;
+
+}catch(e){
+
+hasil.innerHTML = `
+<div class="error">
+Gagal mengambil data dari spreadsheet.
+</div>
+`;
+
+}
+
+}
+
+</script>
 
 </body>
 </html>
